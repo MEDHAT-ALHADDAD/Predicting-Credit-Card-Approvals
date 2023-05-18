@@ -162,35 +162,6 @@ cc_apps.head()
 </table>
 </div>
 
-
-
-
-```python
-%%nose
-import pandas as pd
-
-def test_cc_apps_exists():
-    assert "cc_apps" in globals(), \
-        "The variable cc_apps should be defined."
-        
-def test_cc_apps_correctly_loaded():
-    correct_cc_apps = pd.read_csv("datasets/cc_approvals.data", header=None)
-    try:
-        pd.testing.assert_frame_equal(cc_apps, correct_cc_apps)
-    except AssertionError:
-        assert False, "The variable cc_apps should contain the data as present in datasets/cc_approvals.data."
-```
-
-
-
-
-
-
-    2/2 tests passed
-
-
-
-
 ## 2. Inspecting the applications
 <p>The output may appear a bit confusing at its first sight, but let's try to figure out the most important features of a credit card application. The features of this dataset have been anonymized to protect the privacy, but <a href="http://rstudio-pubs-static.s3.amazonaws.com/73039_9946de135c0a49daa7a0a9eda4a67a72.html">this blog</a> gives us a pretty good overview of the probable features. The probable features in a typical credit card application are <code>Gender</code>, <code>Age</code>, <code>Debt</code>, <code>Married</code>, <code>BankCustomer</code>, <code>EducationLevel</code>, <code>Ethnicity</code>, <code>YearsEmployed</code>, <code>PriorDefault</code>, <code>Employed</code>, <code>CreditScore</code>, <code>DriversLicense</code>, <code>Citizen</code>, <code>ZipCode</code>, <code>Income</code> and finally the <code>ApprovalStatus</code>. This gives us a pretty good starting point, and we can map these features with respect to the columns in the output.   </p>
 <p>As we can see from our first glance at the data, the dataset has a mixture of numerical and non-numerical features. This can be fixed with some preprocessing, but before we do that, let's learn about the dataset a bit more to see if there are other dataset issues that need to be fixed.</p>
@@ -617,41 +588,6 @@ cc_apps.tail(17)
 </table>
 </div>
 
-
-
-
-```python
-%%nose
-
-def test_cc_apps_description_exists():
-    assert "cc_apps_description" in globals(), \
-        "The variable cc_apps_description should be defined."
-
-def test_cc_apps_description_correctly_done():
-    correct_cc_apps_description = cc_apps.describe()
-    assert str(correct_cc_apps_description) == str(cc_apps_description), \
-        "cc_apps_description should contain the output of cc_apps.describe()."
-    
-def test_cc_apps_info_exists():
-    assert "cc_apps_info" in globals(), \
-        "The variable cc_apps_info should be defined."
-
-def test_cc_apps_info_correctly_done():
-    correct_cc_apps_info = cc_apps.info()
-    assert str(correct_cc_apps_info) == str(cc_apps_info), \
-        "cc_apps_info should contain the output of cc_apps.info()."
-```
-
-
-
-
-
-
-    4/4 tests passed
-
-
-
-
 ## 3. Splitting the dataset into train and test sets
 <p>Now, we will split our data into train set and test set to prepare our data for two different phases of machine learning modeling: training and testing. Ideally, no information from the test data should be used to preprocess the training data or should be used to direct the training process of a machine learning model. Hence, we first split the data and then preprocess it.</p>
 <p>Also, features like <code>DriversLicense</code> and <code>ZipCode</code> are not as important as the other features in the dataset for predicting credit card approvals. To get a better sense, we can measure their <a href="https://realpython.com/numpy-scipy-pandas-correlation-python/">statistical correlation</a> to the labels of the dataset. But this is out of scope for this project. We should drop them to design our machine learning model with the best set of features. In Data Science literature, this is often referred to as <em>feature selection</em>. </p>
@@ -667,38 +603,6 @@ cc_apps = cc_apps.drop([11,13], axis=1)
 # Split into train and test sets
 cc_apps_train, cc_apps_test = train_test_split(cc_apps, test_size=0.33, random_state=42)
 ```
-
-
-```python
-%%nose
-
-
-def test_columns_dropped_correctly():
-    assert cc_apps.shape == (
-        690,
-        14,
-    ), "The shape of the DataFrame isn't correct. Did you drop the two columns?"
-
-
-def test_data_split_correctly():
-    cc_apps_train_correct, cc_apps_test_correct = train_test_split(
-        cc_apps, test_size=0.33, random_state=42
-    )
-    assert cc_apps_train_correct.equals(cc_apps_train) and cc_apps_test_correct.equals(
-        cc_apps_test
-    ), "It doesn't appear that the data splitting was done correctly."
-```
-
-
-
-
-
-
-    2/2 tests passed
-
-
-
-
 ## 4. Handling the missing values (part i)
 <p>Now we've split our data, we can handle some of the issues we identified when inspecting the DataFrame, including:</p>
 <ul>
@@ -717,57 +621,6 @@ import numpy as np
 cc_apps_train = cc_apps_train.replace('?', np.NaN)
 cc_apps_test = cc_apps_test.replace('?', np.NaN)
 ```
-
-
-```python
-%%nose
-
-# def test_cc_apps_assigned():
-#     assert "cc_apps" in globals(), \
-#         "After the NaN replacement, it should be assigned to the same variable cc_apps only."
-
-
-def test_cc_apps_correctly_replaced():
-    cc_apps_fresh = pd.read_csv("datasets/cc_approvals.data", header=None)
-    cc_apps_train_correct, cc_apps_test_correct = train_test_split(
-        cc_apps_fresh, test_size=0.33, random_state=42
-    )
-
-    correct_cc_apps_replacement_correct_train = cc_apps_train_correct.replace(
-        "?", np.NaN
-    )
-    correct_cc_apps_replacement_correct_test = cc_apps_test_correct.replace("?", np.NaN)
-    string_cc_apps_replacement_train = cc_apps_train_correct.replace("?", "NaN")
-    string_cc_apps_replacement_test = cc_apps_test_correct.replace("?", "NaN")
-    #     assert cc_apps.to_string() == correct_cc_apps_replacement.to_string(), \
-    #         "The code that replaces question marks with NaNs doesn't appear to be correct."
-    try:
-        pd.testing.assert_frame_equal(
-            correct_cc_apps_replacement_correct_train, cc_apps_train
-        )
-
-        pd.testing.assert_frame_equal(
-            correct_cc_apps_replacement_correct_test, cc_apps_test
-        )
-    except AssertionError:
-        if string_cc_apps_replacement_train.equals(
-            cc_apps_train
-        ) or string_cc_apps_replacement_test.equals(cc_apps_test):
-            assert (
-                False
-            ), 'It looks like the question marks were replaced by the string "NaN". Missing values should be represented by `np.nan`.'
-```
-
-
-
-
-
-
-    1/1 tests passed
-
-
-
-
 ## 5. Handling the missing values (part ii)
 <p>We replaced all the question marks with NaNs. This is going to help us in the next missing value treatment that we are going to perform.</p>
 <p>An important question that gets raised here is <em>why are we giving so much importance to missing values</em>? Can't they be just ignored? Ignoring missing values can affect the performance of a machine learning model heavily. While ignoring the missing values our machine learning model may miss out on information about the dataset that may be useful for its training. Then, there are many models which cannot handle missing values implicitly such as Linear Discriminant Analysis (LDA). </p>
@@ -814,30 +667,6 @@ print(cc_apps_test.isnull().sum())
     14    0
     15    0
     dtype: int64
-
-
-
-```python
-%%nose
-
-
-def test_cc_apps_correctly_imputed():
-    assert (
-        cc_apps_train.isnull().to_numpy().sum() == 39
-        and cc_apps_test.isnull().to_numpy().sum() == 15
-    ), "There should be 39 and 15 null values in the training and test sets after your code is run, but there aren't."
-```
-
-
-
-
-
-
-    1/1 tests passed
-
-
-
-
 ## 6. Handling the missing values (part iii)
 <p>We have successfully taken care of the missing values present in the numeric columns. There are still some missing values to be imputed for columns 0, 1, 3, 4, 5, 6 and 13. All of these columns contain non-numeric data and this is why the mean imputation strategy would not work here. This needs a different treatment. </p>
 <p>We are going to impute these missing values with the most frequent values as present in the respective columns. This is <a href="https://www.datacamp.com/community/tutorials/categorical-data">good practice</a> when it comes to imputing missing values for categorical data in general.</p>
@@ -871,30 +700,6 @@ print(cc_apps_train.isna().sum())
     14    0
     15    0
     dtype: int64
-
-
-
-```python
-%%nose
-
-
-def test_cc_apps_correctly_imputed():
-    assert (
-        cc_apps_train.isnull().to_numpy().sum() == 0
-        and cc_apps_test.isnull().to_numpy().sum() == 0
-    ), "There should be 0 null values after your code is run, but there isn't."
-```
-
-
-
-
-
-
-    1/1 tests passed
-
-
-
-
 ## 7. Preprocessing the data (part i)
 <p>The missing values are now successfully handled.</p>
 <p>There is still some minor but essential data preprocessing needed before we proceed towards building our machine learning model. We are going to divide these remaining preprocessing steps into two main tasks:</p>
@@ -913,31 +718,6 @@ cc_apps_test = pd.get_dummies(cc_apps_test)
 # Reindex the columns of the test set aligning with the train set
 cc_apps_test = cc_apps_test.reindex(columns=cc_apps_train.columns, fill_value=0)
 ```
-
-
-```python
-%%nose
-
-
-def test_label_encoding_done_correctly():
-    for col in cc_apps_train.columns:
-        if (
-            np.issubdtype(cc_apps_train[col].dtype, np.number) != True
-            and np.issubdtype(cc_apps_test[col].dtype, np.number) != True
-        ):
-            assert "It doesn't appear that all of the non-numeric columns were converted to numeric using fit_transform and transform."
-```
-
-
-
-
-
-
-    1/1 tests passed
-
-
-
-
 ## 8. Preprocessing the data (part ii)
 <p>Now, we are only left with one final preprocessing step of scaling before we can fit a machine learning model to the data. </p>
 <p>Now, let's try to understand what these scaled values mean in the real world. Let's use <code>CreditScore</code> as an example. The credit score of a person is their creditworthiness based on their credit history. The higher this number, the more financially trustworthy a person is considered to be. So, a <code>CreditScore</code> of 1 is the highest since we're rescaling all the values to the range of 0-1.</p>
@@ -956,36 +736,6 @@ scaler = MinMaxScaler(feature_range=(0, 1))
 rescaledX_train = scaler.fit_transform(X_train)
 rescaledX_test = scaler.transform(X_test)
 ```
-
-
-```python
-%%nose
-
-
-def test_training_range_set_correctly():
-    min_value_in_rescaledX_train = np.amin(rescaledX_train)
-    max_value_in_rescaledX_train = np.amax(rescaledX_train)
-    assert (
-        min_value_in_rescaledX_train == 0.0 and max_value_in_rescaledX_train == 1.0
-    ), "Did you correctly fit and transform the `X_train` data?"
-
-
-def test_xtest_created():
-    assert (
-        "rescaledX_test" in globals()
-    ), "Did you correctly use the fitted `scaler` to transform the `X_test` data?"
-```
-
-
-
-
-
-
-    2/2 tests passed
-
-
-
-
 ## 9. Fitting a logistic regression model to the train set
 <p>Essentially, predicting if a credit card application will be approved or not is a <a href="https://en.wikipedia.org/wiki/Statistical_classification">classification</a> task. According to UCI, our dataset contains more instances that correspond to "Denied" status than instances corresponding to "Approved" status. Specifically, out of 690 instances, there are 383 (55.5%) applications that got denied and 307 (44.5%) applications that got approved. </p>
 <p>This gives us a benchmark. A good machine learning model should be able to accurately predict the status of the applications with respect to these statistics.</p>
@@ -1010,37 +760,6 @@ logreg.fit(rescaledX_train, y_train)
               intercept_scaling=1, max_iter=100, multi_class='ovr', n_jobs=1,
               penalty='l2', random_state=None, solver='liblinear', tol=0.0001,
               verbose=0, warm_start=False)
-
-
-
-
-```python
-%%nose
-
-
-def test_logreg_defined():
-    assert (
-        "logreg" in globals()
-    ), "Did you instantiate LogisticRegression in the logreg variable?"
-
-
-def test_logreg_defined_correctly():
-    logreg_correct = LogisticRegression()
-    assert str(logreg_correct) == str(
-        logreg
-    ), "The logreg variable should be defined with LogisticRegression() only."
-```
-
-
-
-
-
-
-    2/2 tests passed
-
-
-
-
 ## 10. Making predictions and evaluating performance
 <p>But how well does our model perform? </p>
 <p>We will now evaluate our model on the test set with respect to <a href="https://developers.google.com/machine-learning/crash-course/classification/accuracy">classification accuracy</a>. But we will also take a look the model's <a href="http://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/">confusion matrix</a>. In the case of predicting credit card applications, it is important to see if our machine learning model is equally capable of predicting approved and denied status, in line with the frequency of these labels in our original dataset. If our model is not performing well in this aspect, then it might end up approving the application that should have been approved. The confusion matrix helps us to view our model's performance from these aspects.  </p>
@@ -1063,32 +782,6 @@ print(confusion_matrix(y_test, y_pred))
     Accuracy of logistic regression classifier:  1.0
     [[103   0]
      [  0 125]]
-
-
-
-```python
-%%nose
-
-def test_ypred_defined():
-    assert "y_pred" in globals(),\
-        "The variable y_pred should be defined."
-
-def test_ypred_defined_correctly():
-    correct_y_pred = logreg.predict(rescaledX_test)
-    assert str(correct_y_pred) == str(y_pred),\
-        "The y_pred variable should contain the predictions as made by LogisticRegression on rescaledX_test."
-```
-
-
-
-
-
-
-    2/2 tests passed
-
-
-
-
 ## 11. Grid searching and making the model perform better
 <p>Our model was pretty good! In fact it was able to yield an accuracy score of 100%.</p>
 <p>For the confusion matrix, the first element of the of the first row of the confusion matrix denotes the true negatives meaning the number of negative instances (denied applications) predicted by the model correctly. And the last element of the second row of the confusion matrix denotes the true positives meaning the number of positive instances (approved applications) predicted by the model correctly.</p>
@@ -1111,55 +804,6 @@ max_iter = [100, 150, 200]
 # Create a dictionary where tol and max_iter are keys and the lists of their values are corresponding values
 param_grid = dict(tol=tol, max_iter=max_iter)
 ```
-
-
-```python
-%%nose
-
-
-def test_tol_defined():
-    assert "tol" in globals(), "The variable tol should be defined."
-
-
-def test_max_iter_defined():
-    assert "max_iter" in globals(), "The variable max_iter should be defined."
-
-
-def test_tol_defined_correctly():
-    correct_tol = [0.01, 0.001, 0.0001]
-    assert (
-        correct_tol == tol
-    ), "It looks like the tol variable is not defined with the list of correct values."
-
-
-def test_max_iter_defined_correctly():
-    correct_max_iter = [100, 150, 200]
-    assert (
-        correct_max_iter == max_iter
-    ), "It looks like the max_iter variable is not defined with a list of correct values."
-
-
-def test_param_grid_defined():
-    assert "param_grid" in globals(), "The variable param_grid should be defined."
-
-
-def test_param_grid_defined_correctly():
-    correct_param_grid = dict(tol=tol, max_iter=max_iter)
-    assert str(correct_param_grid) == str(
-        param_grid
-    ), "It looks like the param_grid variable is not defined properly."
-```
-
-
-
-
-
-
-    6/6 tests passed
-
-
-
-
 ## 12. Finding the best performing model
 <p>We have defined the grid of hyperparameter values and converted them into a single dictionary format which <code>GridSearchCV()</code> expects as one of its parameters. Now, we will begin the grid search to see which values perform best.</p>
 <p>We will instantiate <code>GridSearchCV()</code> with our earlier <code>logreg</code> model with all the data we have. We will also instruct <code>GridSearchCV()</code> to perform a <a href="https://www.dataschool.io/machine-learning-with-scikit-learn/">cross-validation</a> of five folds.</p>
@@ -1188,72 +832,3 @@ print("Accuracy of logistic regression classifier: ", best_model)
               intercept_scaling=1, max_iter=100, multi_class='ovr', n_jobs=1,
               penalty='l2', random_state=None, solver='liblinear', tol=0.01,
               verbose=0, warm_start=False)
-
-
-
-```python
-%%nose
-
-correct_grid_model = GridSearchCV(estimator=logreg, param_grid=param_grid, cv=5)
-correct_grid_model_result = correct_grid_model.fit(rescaledX_train, y_train)
-
-
-def test_grid_model_defined():
-    assert "grid_model" in globals(), "The variable grid_model should be defined."
-
-
-def test_grid_model_defined_correctly():
-    # correct_grid_model = GridSearchCV(estimator=logreg, param_grid=param_grid, cv=5)
-    assert str(correct_grid_model) == str(
-        grid_model
-    ), "It doesn't appear that `grid_model` was defined correctly."
-
-
-def test_grid_model_results_defined():
-    assert (
-        "grid_model_result" in globals()
-    ), "The variable `grid_model_result` should be defined."
-
-
-def test_grid_model_result_defined_correctly():
-    #     correct_grid_model = GridSearchCV(estimator=logreg, param_grid=param_grid, cv=5)
-    #     correct_grid_model_result = correct_grid_model.fit(rescaledX, y)
-    assert str(correct_grid_model_result) == str(
-        grid_model_result
-    ), "It doesn't appear that `grid_model_result` was defined correctly."
-
-
-def test_best_score_defined_correctly():
-    #     correct_grid_model = GridSearchCV(estimator=logreg, param_grid=param_grid, cv=5)
-    #     correct_grid_model_result = correct_grid_model.fit(rescaledX, y)
-    correct_best_score = correct_grid_model_result.best_score_
-    assert (
-        correct_best_score == best_score
-    ), "It looks like the variable `best_score` is not defined correctly."
-
-
-def test_best_params_defined_correctly():
-    #     correct_grid_model = GridSearchCV(estimator=logreg, param_grid=param_grid, cv=5)
-    #     correct_grid_model_result = correct_grid_model.fit(rescaledX, y)
-    correct_best_params = correct_grid_model_result.best_params_
-    assert (
-        correct_best_params == best_params
-    ), "It looks like the variable `best_params` is not defined correctly."
-
-
-def test_best_model_defined_correctly():
-    correct_best_model = correct_grid_model_result.best_estimator_
-    assert (
-        str(correct_best_model) == str(best_model)
-    ), "It looks like the variable `best_model` is not defined correctly."
-```
-
-
-
-
-
-
-    7/7 tests passed
-
-
-
